@@ -24,12 +24,15 @@ import me.lucko.helper.Events;
 import me.lucko.helper.Schedulers;
 import me.lucko.helper.time.Time;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.tags.ItemTagType;
+import org.bukkit.persistence.PersistentDataType;
 import org.codemc.worldguardwrapper.flag.WrappedState;
 
 import java.util.*;
@@ -63,7 +66,7 @@ public class EnchantsManager {
 
 	public ItemStack updatePickaxe(Player player, ItemStack item) {
 
-		if (item == null || !this.plugin.getCore().isPickaxeSupported(item.getType())) {
+		if (item == null || !this.plugin.getCore().isPickaxeSupported(item)) {
 			return item;
 		}
 
@@ -71,8 +74,10 @@ public class EnchantsManager {
 	}
 
 	private ItemStack applyLoreToPickaxe(Player player, ItemStack item) {
-
+		NamespacedKey key = new NamespacedKey(plugin.getCore(), "miner-pickaxe");
 		ItemMeta meta = item.getItemMeta();
+		meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, "server-pickaxe");
+		item.setItemMeta(meta);
 		List<String> lore = new ArrayList<>();
 
 		boolean pickaxeLevels = this.plugin.getCore().isModuleEnabled(XPrisonPickaxeLevels.MODULE_NAME);
@@ -231,15 +236,19 @@ public class EnchantsManager {
     }
 
 	public void handleBlockBreak(BlockBreakEvent e, ItemStack pickAxe) {
+		if(this.plugin.getCore().getMines().getApi().getMineAtLocation(e.getBlock().getLocation()) != null){
+			this.addBlocksBrokenToItem(e.getPlayer(), 1);
 
-		this.addBlocksBrokenToItem(e.getPlayer(), 1);
+			if (RegionUtils.getRegionWithHighestPriorityAndFlag(e.getBlock().getLocation(), Constants.ENCHANTS_WG_FLAG_NAME, WrappedState.ALLOW) == null) {
+				this.plugin.getCore().debug("EnchantsManager::handleBlockBreak >> No region with flag upc-enchants found. Enchants will not be triggered.", this.plugin);
+				return;
+			}
+			//sell directly
 
-		if (RegionUtils.getRegionWithHighestPriorityAndFlag(e.getBlock().getLocation(), Constants.ENCHANTS_WG_FLAG_NAME, WrappedState.ALLOW) == null) {
-			this.plugin.getCore().debug("EnchantsManager::handleBlockBreak >> No region with flag upc-enchants found. Enchants will not be triggered.", this.plugin);
-			return;
+			//no drop
+			e.setDropItems(false);
+			forEachEffectiveEnchant(e.getPlayer(), pickAxe, (enchant, level) -> enchant.onBlockBreak(e, level));
 		}
-
-        forEachEffectiveEnchant(e.getPlayer(), pickAxe, (enchant, level) -> enchant.onBlockBreak(e, level));
 	}
 
 	public void handlePickaxeEquip(Player p, ItemStack newItem) {

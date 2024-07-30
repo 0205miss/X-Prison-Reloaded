@@ -379,7 +379,7 @@ public class MineManager {
 			MinePostResetEvent postResetEvent = new MinePostResetEvent(mine);
 
 			Events.call(postResetEvent);
-		}, 5, TimeUnit.SECONDS);
+		}, 0, TimeUnit.SECONDS);
 
 	}
 

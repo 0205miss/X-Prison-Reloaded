@@ -3,6 +3,8 @@ package dev.drawethree.xprison.utils.compat;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 
+import java.util.logging.Logger;
+
 /**
  * Represents the current Minecraft version the plugin loaded on
  */
@@ -23,6 +25,7 @@ public final class MinecraftVersion {
 	 * The version wrapper
 	 */
 	public enum V {
+		v1_21(21),
 		v1_20(20, false),
 		v1_19(19),
 		v1_18(18),
@@ -168,8 +171,10 @@ public final class MinecraftVersion {
 			final boolean hasGatekeeper = !"craftbukkit".equals(curr) && !"".equals(packageName);
 
 			serverVersion = curr;
-
-			if (hasGatekeeper) {
+			if(Bukkit.getBukkitVersion().equals("1.21-R0.1-SNAPSHOT")) {
+				serverVersion = "1.21";
+				current = V.v1_21;
+			} else if (hasGatekeeper) {
 				int pos = 0;
 
 				for (final char ch : curr.toCharArray()) {
@@ -191,7 +196,6 @@ public final class MinecraftVersion {
 
 			} else
 				current = V.v1_3_AND_BELOW;
-
 		} catch (final Throwable t) {
 			t.printStackTrace();
 		}

@@ -51,7 +51,7 @@ public class EnchantsListener {
 	private void subscribeToBlockBreakEvent() {
 		Events.subscribe(BlockBreakEvent.class, EventPriority.HIGHEST)
 				.filter(e -> !e.isCancelled() && !ignoredEvents.contains(e))
-				.filter(e -> e.getPlayer().getItemInHand() != null && this.plugin.getCore().isPickaxeSupported(e.getPlayer().getItemInHand().getType()))
+				.filter(e -> e.getPlayer().getItemInHand() != null && this.plugin.getCore().isPickaxeSupported(e.getPlayer().getItemInHand().getItemMeta()))
 				.handler(e -> this.plugin.getEnchantsManager().handleBlockBreak(e, e.getPlayer().getItemInHand())).bindWith(this.plugin.getCore());
 	}
 
@@ -64,12 +64,12 @@ public class EnchantsListener {
 					ItemStack previousItem = e.getPlayer().getInventory().getItem(e.getPreviousSlot());
 
 					// Old item
-					if (previousItem != null && this.plugin.getCore().isPickaxeSupported(previousItem.getType())) {
+					if (previousItem != null && this.plugin.getCore().isPickaxeSupported(previousItem)) {
 						this.plugin.getEnchantsManager().handlePickaxeUnequip(e.getPlayer(), previousItem);
 					}
 
 					// New item
-					if (newItem != null && this.plugin.getCore().isPickaxeSupported(newItem.getType())) {
+					if (newItem != null && this.plugin.getCore().isPickaxeSupported(newItem)) {
 						this.plugin.getEnchantsManager().handlePickaxeEquip(e.getPlayer(), newItem);
 					}
 
@@ -78,7 +78,7 @@ public class EnchantsListener {
 
 	private void subscribeToPlayerInteractEvent() {
 		Events.subscribe(PlayerInteractEvent.class)
-				.filter(e -> e.getItem() != null && this.plugin.getCore().isPickaxeSupported(e.getItem().getType()))
+				.filter(e -> e.getItem() != null && this.plugin.getCore().isPickaxeSupported(e.getItem()))
 				.filter(e -> (this.plugin.getEnchantsConfig().getOpenEnchantMenuActions().contains(e.getAction())))
 				.handler(e -> {
 

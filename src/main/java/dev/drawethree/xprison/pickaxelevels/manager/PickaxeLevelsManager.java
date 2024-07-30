@@ -43,7 +43,7 @@ public class PickaxeLevelsManager {
 	}
 
 	public Optional<PickaxeLevel> getPickaxeLevel(ItemStack itemStack) {
-		if (itemStack == null || !this.plugin.getCore().isPickaxeSupported(itemStack.getType())) {
+		if (itemStack == null || !this.plugin.getCore().isPickaxeSupported(itemStack)) {
 			return Optional.empty();
 		}
 
@@ -87,7 +87,7 @@ public class PickaxeLevelsManager {
 			if (i == null) {
 				continue;
 			}
-			if (this.plugin.getCore().isPickaxeSupported(i.getType())) {
+			if (this.plugin.getCore().isPickaxeSupported(i)) {
 				return i;
 			}
 		}

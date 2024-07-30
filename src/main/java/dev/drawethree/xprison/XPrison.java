@@ -39,10 +39,15 @@ import net.milkbowl.vault.economy.Economy;
 import dev.drawethree.xprison.utils.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.codemc.worldguardwrapper.WorldGuardWrapper;
 import org.codemc.worldguardwrapper.flag.WrappedState;
@@ -403,12 +408,30 @@ public final class XPrison extends ExtendedJavaPlugin {
 		return economy != null;
 	}
 
-	public boolean isPickaxeSupported(Material m) {
-		return this.supportedPickaxes.contains(m);
+	public boolean isPickaxeSupported(ItemMeta m) {
+		PersistentDataContainer container = m.getPersistentDataContainer();
+		if(container.has(new NamespacedKey(this, "miner-pickaxe"), PersistentDataType.STRING)) {
+			String foundvalue = container.get(new NamespacedKey(this, "miner-pickaxe"), PersistentDataType.STRING);
+			if(foundvalue.equals("server-pickaxe")) {
+				return true;
+			}else {
+				return false;
+			}
+		}else
+			return false;
 	}
 
 	public boolean isPickaxeSupported(ItemStack item) {
-		return item != null && isPickaxeSupported(item.getType());
+		PersistentDataContainer container = item.getItemMeta().getPersistentDataContainer();
+		if(container.has(new NamespacedKey(this, "miner-pickaxe"), PersistentDataType.STRING)) {
+			String foundvalue = container.get(new NamespacedKey(this, "miner-pickaxe"), PersistentDataType.STRING);
+			if(foundvalue.equals("server-pickaxe")) {
+				return true;
+			}else {
+				return false;
+			}
+		}else
+			return false;
 	}
 
 	public Collection<XPrisonModule> getModules() {
