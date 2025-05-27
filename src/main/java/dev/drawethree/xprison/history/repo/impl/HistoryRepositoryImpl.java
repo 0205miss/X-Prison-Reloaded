@@ -3,6 +3,7 @@ package dev.drawethree.xprison.history.repo.impl;
 import dev.drawethree.xprison.database.SQLDatabase;
 import dev.drawethree.xprison.history.model.HistoryLine;
 import dev.drawethree.xprison.history.repo.HistoryRepository;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import java.sql.Connection;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 public final class HistoryRepositoryImpl implements HistoryRepository {
 
@@ -33,12 +35,10 @@ public final class HistoryRepositoryImpl implements HistoryRepository {
 	@Override
 	public List<HistoryLine> getPlayerHistory(OfflinePlayer player) {
 		List<HistoryLine> returnList = new ArrayList<>();
-		try (Connection con = this.database.getConnection(); PreparedStatement statement = database.prepareStatement(con,"SELECT * FROM " + TABLE_NAME + " where ?=?")) {
-			statement.setString(1, HISTORY_PLAYER_UUID_COLNAME);
-			statement.setString(2, player.getUniqueId().toString());
-			try (ResultSet set = statement.executeQuery()) {
+		try (Connection con = this.database.getConnection(); PreparedStatement statement = database.prepareStatement(con,"SELECT * FROM " + TABLE_NAME + " where player_uuid=?")) {
+			statement.setString(1, player.getUniqueId().toString());
+				ResultSet set = statement.executeQuery();
 				while (set.next()) {
-
 					UUID recordId = UUID.fromString(set.getString(HISTORY_UUID_COLNAME));
 					UUID playerUuid = UUID.fromString(set.getString(HISTORY_PLAYER_UUID_COLNAME));
 					String moduleName = set.getString(HISTORY_MODULE_COLNAME);
@@ -54,7 +54,7 @@ public final class HistoryRepositoryImpl implements HistoryRepository {
 							.build();
 					returnList.add(line);
 				}
-			}
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

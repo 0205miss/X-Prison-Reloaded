@@ -7,7 +7,7 @@ softdepend:
   - MVdWPlaceholderAPI
   - Multiverse-Core
   - UltraBackpacks
-authors: [ WildInterloper, Drawethree ]
+authors: [ WildInterloper, Drawethree,0205miss ]
 api-version: 1.21
 load: POSTWORLD
-website: www.WildInterloper.com
+website: https://github.com/0205miss/X-Prison-Reloaded

@@ -67,6 +67,8 @@ public final class EnchantGUI extends Gui {
 				this.close();
 			}
 		},10);
+
+		setFallbackGui(player1 -> new PickaxeGUI(plugin, player, pickAxe, pickaxePlayerInventorySlot));
 	}
 
 	@Override

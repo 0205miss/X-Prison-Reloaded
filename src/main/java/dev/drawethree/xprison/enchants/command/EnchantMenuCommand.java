@@ -2,6 +2,7 @@ package dev.drawethree.xprison.enchants.command;
 
 import dev.drawethree.xprison.enchants.XPrisonEnchants;
 import dev.drawethree.xprison.enchants.gui.EnchantGUI;
+import dev.drawethree.xprison.enchants.gui.PickaxeGUI;
 import dev.drawethree.xprison.utils.inventory.InventoryUtils;
 import dev.drawethree.xprison.utils.player.PlayerUtils;
 import me.lucko.helper.Commands;
@@ -35,7 +36,7 @@ public class EnchantMenuCommand {
 	private void openEnchantMenu(ItemStack pickAxe, Player player) {
 		int pickaxeSlot = InventoryUtils.getInventorySlot(player, pickAxe);
 		this.plugin.getCore().debug("Pickaxe slot is: " + pickaxeSlot, this.plugin);
-		new EnchantGUI(this.plugin, player, pickAxe, pickaxeSlot).open();
+		new PickaxeGUI(this.plugin, player, pickAxe, pickaxeSlot).open();
 	}
 
 	private boolean validatePickaxe(ItemStack pickAxe) {

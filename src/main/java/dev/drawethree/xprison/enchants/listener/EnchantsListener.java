@@ -2,32 +2,38 @@ package dev.drawethree.xprison.enchants.listener;
 
 import dev.drawethree.xprison.enchants.XPrisonEnchants;
 import dev.drawethree.xprison.enchants.gui.EnchantGUI;
+import dev.drawethree.xprison.enchants.gui.PickaxeGUI;
 import dev.drawethree.xprison.utils.Constants;
 import dev.drawethree.xprison.utils.compat.MinecraftVersion;
 import dev.drawethree.xprison.utils.inventory.InventoryUtils;
 import me.lucko.helper.Events;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.inventory.InventoryAction;
-import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.GrindstoneInventory;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.flag.WrappedState;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class EnchantsListener {
 
 	private final XPrisonEnchants plugin;
 	private final List<BlockBreakEvent> ignoredEvents = new ArrayList<>();
-
+	private final Set<Integer> craftSlots = new HashSet<Integer>() {{
+		add(0);
+		add(10);
+		add(13);
+		add(16);
+		add(18);
+	}};
 	public EnchantsListener(XPrisonEnchants plugin) {
 		this.plugin = plugin;
 	}
@@ -52,6 +58,7 @@ public class EnchantsListener {
 		Events.subscribe(BlockBreakEvent.class, EventPriority.HIGHEST)
 				.filter(e -> !e.isCancelled() && !ignoredEvents.contains(e))
 				.filter(e -> e.getPlayer().getItemInHand() != null && this.plugin.getCore().isPickaxeSupported(e.getPlayer().getItemInHand().getItemMeta()))
+				.filter(e -> this.plugin.getCore().getMines().getApi().getMineAtLocation(e.getBlock().getLocation()) != null)
 				.handler(e -> this.plugin.getEnchantsManager().handleBlockBreak(e, e.getPlayer().getItemInHand())).bindWith(this.plugin.getCore());
 	}
 
@@ -88,7 +95,7 @@ public class EnchantsListener {
 					int pickaxeSlot = InventoryUtils.getInventorySlot(e.getPlayer(), pickAxe);
 					this.plugin.getCore().debug("Pickaxe slot is: " + pickaxeSlot, this.plugin);
 
-					new EnchantGUI(this.plugin, e.getPlayer(), pickAxe, pickaxeSlot).open();
+					new PickaxeGUI(this.plugin, e.getPlayer(), pickAxe, pickaxeSlot).open();
 				}).bindWith(this.plugin.getCore());
 	}
 
@@ -136,15 +143,25 @@ public class EnchantsListener {
 		}
 
 		Events.subscribe(InventoryClickEvent.class, EventPriority.MONITOR)
-				.filter(e -> e.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY)
 				.filter(e -> e.getWhoClicked() instanceof Player)
 				.filter(e -> !e.isCancelled())
 				.handler(e -> {
-					ItemStack item = e.getCurrentItem();
-					if (this.plugin.getCore().isPickaxeSupported(item)) {
-						this.plugin.getEnchantsManager().handlePickaxeUnequip((Player) e.getWhoClicked(), item);
+					if(e.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
+						ItemStack item = e.getCurrentItem();
+                        assert item != null;
+                        if (this.plugin.getCore().isPickaxeSupported(item)) {
+							this.plugin.getEnchantsManager().handlePickaxeUnequip((Player) e.getWhoClicked(), item);
+							e.setCancelled(true);
+						}
+					}else if(e.getView().getTopInventory().getType() == InventoryType.CHEST && e.getView().getBottomInventory().getType() == InventoryType.PLAYER) {
+						ItemStack item = e.getCurrentItem();
+						assert item != null;
+						if (this.plugin.getCore().isPickaxeSupported(item)) {
+							e.setCancelled(true);
+						}
 					}
 				}).bindWith(this.plugin.getCore());
+
 	}
 
 	private void subscribeToPlayerDeathEvent() {

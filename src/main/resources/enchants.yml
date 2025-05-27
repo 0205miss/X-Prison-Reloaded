@@ -41,6 +41,46 @@ keep-pickaxes-on-death: true
 use-unbreakable-permission: true
 # Action to open Enchanting menu while holding pickaxe. For multiple, separate them with ',' (LEFT_CLICK_BLOCK,RIGHT_CLICK_BLOCK,LEFT_CLICK_AIR,RIGHT_CLICK_AIR,PHYSICAL)
 open-enchant-menu-action: "RIGHT_CLICK_AIR,RIGHT_CLICK_BLOCK"
+skins:
+  # GUI Name
+  title: '&j外觀設定'
+  # Filler items
+  empty_slots: STAINED_GLASS_PANE:7
+  # Number of GUI rows
+  lines: 6
+  # Slot where player's pickaxe should be displayed
+  pickaxe_slot: 13
+  # Should we show player's pickaxe in GUI ?
+  pickaxe_enabled: true
+  used_lore: '套用中'
+  un_used_lore: '未套用'
+pickaxe_menu:
+  # GUI Name
+  title: '&礦稿資訊'
+  # Filler items
+  empty_slots: STAINED_GLASS_PANE:7
+  # Number of GUI rows
+  lines: 6
+  # Slot where player's pickaxe should be displayed
+  pickaxe_slot: 13
+  # Should we show player's pickaxe in GUI ?
+  pickaxe_enabled: true
+  enchant:
+    material: FLINT_AND_STEEL
+    Base64: 'null'
+    slot: 11
+    name: '&6&l附魔升級'
+    lore:
+      - ' '
+      - '&7&o(( &f&o點擊&7&o 進入強化頁面 ))'
+  skin:
+    material: FLINT_AND_STEEL
+    Base64: 'null'
+    slot: 15
+    name: '&6&l外觀'
+    lore:
+      - ' '
+      - '&7&o(( &f&o點擊&7&o 進入強化頁面 ))'
 # Enchant Menu Settings
 enchant_menu:
   # GUI Name
@@ -163,6 +203,13 @@ enchants:
     # Description of enchant show in GUIs
     Description:
       - '&7&o(( Ability to mine blocks faster ))'
+    #buy currency type token/gem
+    TokenType: token
+    # Inherit enable when rebirth
+    Inherit:
+      Enabled: false
+      #Rate to inherit
+      Rate: 0.9
     # Refund settings
     Refund:
       # Can this enchant be refunded?

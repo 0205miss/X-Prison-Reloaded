@@ -100,6 +100,12 @@ public final class ItemStackBuilder {
 		});
 	}
 
+	public ItemStackBuilder custommodel(int model) {
+		return transformMeta(meta -> {
+			meta.setCustomModelData(model);
+		});
+	}
+
 	public ItemStackBuilder lore(String... lines) {
 		return transformMeta(meta -> {
 			List<String> lore = meta.getLore() == null ? new ArrayList<>() : meta.getLore();

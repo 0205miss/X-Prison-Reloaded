@@ -6,7 +6,7 @@
 
     <groupId>dev.drawethree.xprison</groupId>
     <artifactId>X-Prison</artifactId>
-    <version>1.12.18</version>
+    <version>1.21.0</version>
 
     <name>XPrison Reloaded</name>
 
@@ -79,6 +79,10 @@
             <id>sqlite</id>
             <url>https://oss.sonatype.org/content/repositories/releases/org/xerial/sqlite-jdbc/</url>
         </repository>
+        <repository>
+            <id>OnARandomBox</id>
+            <url>https://repo.onarandombox.com/content/groups/public/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -92,6 +96,12 @@
             <groupId>com.mojang</groupId>
             <artifactId>authlib</artifactId>
             <version>1.5.26</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.onarandombox.multiversecore</groupId>
+            <artifactId>Multiverse-Core</artifactId>
+            <version>4.3.12</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

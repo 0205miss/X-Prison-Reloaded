@@ -104,7 +104,7 @@ public final class XPrison extends ExtendedJavaPlugin {
 
 		// All you have to do is adding the following two lines in your onEnable method.
 		// You can find the plugin ids of your plugins on the page https://bstats.org/what-is-my-plugin-id
-		int pluginId = 10520; // <-- Replace with the id of your plugin!
+		int pluginId = 23038; // <-- Replace with the id of your plugin!
 		Metrics metrics = new Metrics(this, pluginId);
 
 		if (!this.initDatabase()) {
@@ -409,29 +409,38 @@ public final class XPrison extends ExtendedJavaPlugin {
 	}
 
 	public boolean isPickaxeSupported(ItemMeta m) {
-		PersistentDataContainer container = m.getPersistentDataContainer();
-		if(container.has(new NamespacedKey(this, "miner-pickaxe"), PersistentDataType.STRING)) {
-			String foundvalue = container.get(new NamespacedKey(this, "miner-pickaxe"), PersistentDataType.STRING);
-			if(foundvalue.equals("server-pickaxe")) {
-				return true;
-			}else {
+		if(m != null){
+			PersistentDataContainer container = m.getPersistentDataContainer();
+			if(container.has(new NamespacedKey(this, "miner-pickaxe"), PersistentDataType.STRING)) {
+				String foundvalue = container.get(new NamespacedKey(this, "miner-pickaxe"), PersistentDataType.STRING);
+                assert foundvalue != null;
+                return foundvalue.equals("server-pickaxe");
+			}else
 				return false;
-			}
-		}else
+		}
+		else {
 			return false;
+		}
 	}
 
 	public boolean isPickaxeSupported(ItemStack item) {
-		PersistentDataContainer container = item.getItemMeta().getPersistentDataContainer();
-		if(container.has(new NamespacedKey(this, "miner-pickaxe"), PersistentDataType.STRING)) {
-			String foundvalue = container.get(new NamespacedKey(this, "miner-pickaxe"), PersistentDataType.STRING);
-			if(foundvalue.equals("server-pickaxe")) {
-				return true;
+		if (item != null) {
+			if(item.getItemMeta() != null){
+				PersistentDataContainer container = item.getItemMeta().getPersistentDataContainer();
+				if(container.has(new NamespacedKey(this, "miner-pickaxe"), PersistentDataType.STRING)) {
+					String foundvalue = container.get(new NamespacedKey(this, "miner-pickaxe"), PersistentDataType.STRING);
+					assert foundvalue != null;
+					return foundvalue.equals("server-pickaxe");
+				}else
+					return false;
 			}else {
 				return false;
 			}
-		}else
+		}else{
 			return false;
+		}
+
+
 	}
 
 	public Collection<XPrisonModule> getModules() {

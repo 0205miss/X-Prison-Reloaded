@@ -23,29 +23,19 @@ public class GivePickaxeCommand {
 		Commands.create()
 				.assertOp()
 				.handler(c -> {
-
+/*
 					if (c.args().size() == 0) {
-						PlayerUtils.sendMessage(c.sender(), "&c/givepickaxe <player> <[enchant1]=[level1],[enchant2]=[level2],...[enchantX]=[levelX]> <pickaxe_name>");
+						PlayerUtils.sendMessage(c.sender(), "&c/givepickaxe <player>");
 						return;
-					}
+					}*/
 
-					String input = null, name = null;
 					Player target = null;
 
 					if (c.args().size() == 1) {
-						input = c.rawArg(0);
-					} else if (c.args().size() == 2) {
 						target = c.arg(0).parseOrFail(Player.class);
-						input = c.rawArg(1);
-					} else if (c.args().size() >= 3) {
-						target = c.arg(0).parseOrFail(Player.class);
-						input = c.rawArg(1);
-						name = StringUtils.join(c.args().subList(2, c.args().size()), " ");
 					}
 
-					Map<XPrisonEnchantment, Integer> enchants = parseEnchantsFromInput(input);
-
-					this.plugin.getEnchantsManager().givePickaxe(target, enchants, name, c.sender());
+					this.plugin.getEnchantsManager().givePickaxe(target, c.sender());
 				}).registerAndBind(this.plugin.getCore(), "givepickaxe");
 	}
 

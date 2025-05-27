@@ -18,13 +18,12 @@ public class EnchantsConfig {
 
 	private final XPrisonEnchants plugin;
 	private final FileManager.Config config;
-
+	private final FileManager.Config skinconfig;
 	private Map<String, String> messages;
 
 	private LevelFormat levelFormat;
 	private String excludedFormat;
 	private List<String> pickaxeLore;
-	private boolean allowEnchantsOutside;
 	private boolean firstJoinPickaxeEnabled;
 	private CompMaterial firstJoinPickaxeMaterial;
 	private List<String> firstJoinPickaxeEnchants;
@@ -36,10 +35,12 @@ public class EnchantsConfig {
 	public EnchantsConfig(XPrisonEnchants plugin) {
 		this.plugin = plugin;
 		this.config = plugin.getCore().getFileManager().getConfig("enchants.yml").copyDefaults(true).save();
+		this.skinconfig = plugin.getCore().getFileManager().getConfig("skins.yml").copyDefaults(true).save();
 	}
 
 	public void reload() {
 		this.getConfig().reload();
+		this.getSkinConfig().reload();
 		this.load();
 	}
 
@@ -53,7 +54,6 @@ public class EnchantsConfig {
 		this.excludedFormat = getYamlConfig().getString("Pickaxe.excluded-format", "&7[&c-&7] &8%Enchant% %Level%");
 		this.pickaxeLore = getYamlConfig().getStringList("Pickaxe.lore");
 		this.openEnchantMenuActions = Arrays.stream(getYamlConfig().getString("open-enchant-menu-action", "RIGHT_CLICK_AIR,RIGHT_CLICK_BLOCK").split(",")).map(s-> Action.valueOf(s.toUpperCase())).collect(Collectors.toList());
-		this.allowEnchantsOutside = getYamlConfig().getBoolean("allow-enchants-outside-mine-regions");
 		this.firstJoinPickaxeEnabled = getYamlConfig().getBoolean("first-join-pickaxe.enabled");
 		this.firstJoinPickaxeMaterial = CompMaterial.fromString(getYamlConfig().getString("first-join-pickaxe.material"));
 		this.firstJoinPickaxeEnchants = getYamlConfig().getStringList("first-join-pickaxe.enchants");
@@ -69,6 +69,13 @@ public class EnchantsConfig {
 		}
 	}
 
+	private FileManager.Config getSkinConfig() {
+		return this.skinconfig;
+	}
+
+	public YamlConfiguration getSkinYamlConfig() {
+		return this.skinconfig.get();
+	}
 
 	private FileManager.Config getConfig() {
 		return this.config;

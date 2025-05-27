@@ -1,5 +1,6 @@
 package dev.drawethree.xprison.enchants.managers;
 
+import com.google.common.collect.MultimapBuilder;
 import com.saicone.rtag.util.ServerInstance;
 import dev.drawethree.xprison.api.enums.LostCause;
 import dev.drawethree.xprison.api.enums.ReceiveCause;
@@ -23,9 +24,11 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import me.lucko.helper.Events;
 import me.lucko.helper.Schedulers;
 import me.lucko.helper.time.Time;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemFlag;
@@ -46,7 +49,6 @@ public class EnchantsManager {
 	private static final String UNBREAK_PERMISSION = "xprison.pickaxe.unbreakable";
 	private static final boolean USE_META_UNBREAK = ServerInstance.MAJOR_VERSION >= 11;
 	private static final Pattern PICKAXE_LORE_ENCHANT_PATTER = Pattern.compile("(?i)%Enchant-\\d+%");
-
 	private final XPrisonEnchants plugin;
 	private final List<UUID> lockedPlayers;
 
@@ -174,7 +176,11 @@ public class EnchantsManager {
 		}
 
 		meta.setLore(lore);
+		item.addUnsafeEnchantment(Enchantment.INFINITY,0);
+		meta.setAttributeModifiers(MultimapBuilder.hashKeys().hashSetValues().build()); // This is necessary as of 1.20.6
 		meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+		meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+		meta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
 		item.setItemMeta(meta);
 		return item;
 	}
@@ -229,7 +235,17 @@ public class EnchantsManager {
     public void forEachEffectiveEnchant(Player player, ItemStack item, BiConsumer<XPrisonEnchantment, Integer> consumer) {
         for (var entry : this.getItemEnchants(item).entrySet()) {
             final XPrisonEnchantment enchant = entry.getKey();
-            if (enchant.isEnabled() && !player.hasPermission(EXCLUDE_PERMISSION + enchant.getRawName())) {
+			if(enchant.isEnabled()){
+				this.plugin.getCore().debug("EffectiveEnchant >> "+enchant.getRawName()+"enchant enabled", this.plugin);
+			}else{
+				this.plugin.getCore().debug("EffectiveEnchant >> "+enchant.getRawName()+"enchant disable", this.plugin);
+			}
+			if(!player.hasPermission(EXCLUDE_PERMISSION + enchant.getRawName())){
+				this.plugin.getCore().debug("EffectiveEnchant >> "+enchant.getRawName()+"has no permission", this.plugin);
+			}else{
+				this.plugin.getCore().debug("EffectiveEnchant >> "+enchant.getRawName()+"has permission", this.plugin);
+			}
+            if (enchant.isEnabled() && player.hasPermission(EXCLUDE_PERMISSION + enchant.getRawName())) {
                 consumer.accept(enchant, entry.getValue());
             }
         }
@@ -244,10 +260,14 @@ public class EnchantsManager {
 				return;
 			}
 			//sell directly
-
+			//e.getBlock().getDrops().size()
 			//no drop
 			e.setDropItems(false);
-			forEachEffectiveEnchant(e.getPlayer(), pickAxe, (enchant, level) -> enchant.onBlockBreak(e, level));
+			this.plugin.getCore().debug("EnchantsManager::handleBlockBreak >> test.", this.plugin);
+			forEachEffectiveEnchant(e.getPlayer(), pickAxe, (enchant, level) -> {
+				this.plugin.getCore().debug("EnchantsManager::handleBlockBreak >> test ="+enchant.getRawName(), this.plugin);
+				enchant.onBlockBreak(e, level);
+			});
 		}
 	}
 
@@ -312,10 +332,9 @@ public class EnchantsManager {
 			plugin.getCore().getTokens().getApi().removeTokens(gui.getPlayer(), totalCost, LostCause.ENCHANT);
 
 			this.setEnchantLevel(gui.getPlayer(), gui.getPickAxe(), enchantment, currentLevel + addition);
-
 			enchantment.onUnequip(gui.getPlayer(), gui.getPickAxe(), currentLevel);
 			enchantment.onEquip(gui.getPlayer(), gui.getPickAxe(), currentLevel + addition);
-
+			this.getEnchantsRepository().updateEnchants(gui.getPlayer(), enchantment.getId(),addition);
 			gui.getPlayer().getInventory().setItem(gui.getPickaxePlayerInventorySlot(), gui.getPickAxe());
 
 			if (addition == 1) {
@@ -345,6 +364,7 @@ public class EnchantsManager {
 
 			enchantment.onUnequip(gui.getPlayer(), gui.getPickAxe(), currentLevel);
 			enchantment.onEquip(gui.getPlayer(), gui.getPickAxe(), currentLevel + addition);
+			this.getEnchantsRepository().updateEnchants(gui.getPlayer(), enchantment.getId(),addition);
 
 			gui.getPlayer().getInventory().setItem(gui.getPickaxePlayerInventorySlot(), gui.getPickAxe());
 
@@ -535,6 +555,7 @@ public class EnchantsManager {
 				enchantment.onUnequip(gui.getPlayer(), gui.getPickAxe(), currentLevel);
 				this.setEnchantLevel(gui.getPlayer(), gui.getPickAxe(), enchantment, currentLevel + finalLevelsToBuy);
 				enchantment.onEquip(gui.getPlayer(), gui.getPickAxe(), currentLevel + finalLevelsToBuy);
+				this.getEnchantsRepository().updateEnchants(gui.getPlayer(), enchantment.getId(),finalLevelsToBuy);
 				gui.getPlayer().getInventory().setItem(gui.getPickaxePlayerInventorySlot(), gui.getPickAxe());
 				gui.redraw();
 			});
@@ -577,33 +598,40 @@ public class EnchantsManager {
 		return sum;
 	}
 
-	// /givepickaxe <player> <enchant:18=1;...> <name>
-	public void givePickaxe(Player target, Map<XPrisonEnchantment, Integer> enchants, String pickaxeName, CommandSender sender) {
+	// /givepickaxe <player>
+	//Map<XPrisonEnchantment, Integer> enchants
+	public void givePickaxe(Player target,CommandSender sender) {
+		for (ItemStack item : target.getInventory().getContents()){
+			if(this.plugin.getCore().isPickaxeSupported(item)){
+				PlayerUtils.sendMessage(sender,"你已擁有稿子");
+				return;
+			}
+		}
 		ItemStackBuilder pickaxeBuilder = ItemStackBuilder.of(Material.DIAMOND_PICKAXE);
 
-		if (pickaxeName != null) {
-			pickaxeBuilder.name(pickaxeName);
-		}
-
+		String pickaxeName = this.plugin.getEnchantsConfig().getFirstJoinPickaxeName();
+		pickaxeName = pickaxeName.replace("%player%", target.getName());
+		pickaxeBuilder.name(pickaxeName);
 		ItemStack pickaxe = pickaxeBuilder.build();
 
+		Map <XPrisonEnchantment, Integer> enchants = this.getEnchantsRepository().getenchantfromdatabase(target);
 		for (Map.Entry<XPrisonEnchantment, Integer> entry : enchants.entrySet()) {
 			this.setEnchantLevel(target, pickaxe, entry.getKey(), entry.getValue());
 		}
 
-		pickaxe = this.applyLoreToPickaxe(target, pickaxe);
 
 		if (target == null && sender instanceof Player) {
 			target = (Player) sender;
 		}
 
 		if (target != null) {
+
 			if (target.getInventory().firstEmpty() == -1) {
 				PlayerUtils.sendMessage(sender, this.plugin.getEnchantsConfig().getMessage("pickaxe_inventory_full").replace("%player%", target.getName()));
 				return;
 			}
 
-			target.getInventory().addItem(pickaxe);
+			target.getInventory().addItem(this.applyLoreToPickaxe(target, pickaxe));
 			PlayerUtils.sendMessage(sender, this.plugin.getEnchantsConfig().getMessage("pickaxe_given").replace("%player%", target.getName()));
 			PlayerUtils.sendMessage(target, this.plugin.getEnchantsConfig().getMessage("pickaxe_received").replace("%sender%", sender.getName()));
 		}
@@ -637,12 +665,12 @@ public class EnchantsManager {
 		return this.applyLoreToPickaxe(player, item);
 	}
 
+
 	public boolean hasEnchants(ItemStack item) {
 		return item != null && !this.getItemEnchants(item).isEmpty();
 	}
 
 	public void enable() {
-
 	}
 
 	public void disable() {
@@ -651,5 +679,6 @@ public class EnchantsManager {
 
 	public void giveFirstJoinPickaxe(Player target) {
 		target.getInventory().addItem(this.createFirstJoinPickaxe(target));
+		this.getEnchantsRepository().addnewEnchants(target);
 	}
 }

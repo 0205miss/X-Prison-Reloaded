@@ -9,6 +9,8 @@ import dev.drawethree.xprison.enchants.command.*;
 import dev.drawethree.xprison.enchants.config.EnchantsConfig;
 import dev.drawethree.xprison.enchants.gui.DisenchantGUI;
 import dev.drawethree.xprison.enchants.gui.EnchantGUI;
+import dev.drawethree.xprison.enchants.gui.PickaxeGUI;
+import dev.drawethree.xprison.enchants.gui.SkinGUI;
 import dev.drawethree.xprison.enchants.listener.EnchantsListener;
 import dev.drawethree.xprison.enchants.managers.CooldownManager;
 import dev.drawethree.xprison.enchants.managers.EnchantsManager;
@@ -70,6 +72,8 @@ public final class XPrisonEnchants implements XPrisonModule {
 		this.enchantsConfig.reload();
 		this.enchantsRepository.reload();
 
+		SkinGUI.init();
+		PickaxeGUI.init();
 		EnchantGUI.init();
 		DisenchantGUI.init();
 
@@ -95,6 +99,8 @@ public final class XPrisonEnchants implements XPrisonModule {
 		this.enchantsRepository = new EnchantsRepository(this);
 		this.enchantsRepository.loadDefaultEnchantments();
 
+		SkinGUI.init();
+		PickaxeGUI.init();
 		EnchantGUI.init();
 		DisenchantGUI.init();
 

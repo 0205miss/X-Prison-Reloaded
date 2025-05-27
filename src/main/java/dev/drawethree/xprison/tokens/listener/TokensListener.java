@@ -41,6 +41,7 @@ public class TokensListener {
 					final List<String> whitelist = this.plugin.getTokensConfig().getWorldWhitelist();
 					return whitelist.isEmpty() || whitelist.contains(e.getBlock().getWorld().getName());
 				})
+				.filter(e -> this.plugin.getCore().getMines().getApi().getMineAtLocation(e.getBlock().getLocation()) != null)
 				.handler(e -> {
 					List<Block> blocks = new ArrayList<>();
 					blocks.add(e.getBlock());
